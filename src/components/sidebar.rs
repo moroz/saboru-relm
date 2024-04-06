@@ -61,12 +61,24 @@ impl SimpleComponent for SidebarModel {
                 .orientation(gtk::Orientation::Horizontal)
                 .spacing(5)
                 .build();
-            let name_label = gtk::Label::new(None);
+            let name_label = gtk::Label::builder().margin_bottom(5).margin_top(5).build();
             root.append(&name_label);
 
             item.downcast_ref::<gtk::ListItem>()
                 .unwrap()
                 .set_child(Some(&root));
+        });
+        factory.connect_bind(move |_, item| {
+            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+            let sidebar_item = item.item().and_downcast::<SidebarRow>().unwrap();
+            let child = item
+                .child()
+                .and_downcast::<gtk::Box>()
+                .unwrap()
+                .first_child()
+                .and_downcast::<gtk::Label>()
+                .unwrap();
+            child.set_label(&sidebar_item.property::<String>("name"));
         });
 
         widgets.channels.set_factory(Some(&factory));
