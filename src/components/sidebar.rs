@@ -2,6 +2,7 @@ use super::sidebar_item::DataRow;
 use super::sidebar_item::SidebarRow;
 use crate::AppMsg;
 use gtk::gio;
+use gtk::glib::clone;
 use gtk::prelude::*;
 use relm4::ComponentParts;
 use relm4::SimpleComponent;
@@ -65,6 +66,16 @@ impl SimpleComponent for SidebarModel {
             let child = item.child().and_downcast::<SidebarRow>().unwrap();
             child.set_content(data_row.property::<String>("label"))
         });
+
+        model.channels_model.connect_selection_changed(
+            clone!(@strong sender => move |selection, _, _| {
+                if let Some(selected_item) = selection.selected_item() {
+                    let item = selected_item.downcast_ref::<DataRow>().unwrap();
+                    let property = item.property::<i64>("id");
+                    sender.output(AppMsg::SetChannel(property)).unwrap()
+                }
+            }),
+        );
 
         widgets.channels.set_factory(Some(&factory));
         widgets.channels.set_model(Some(&model.channels_model));

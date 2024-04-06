@@ -1,28 +1,23 @@
-use std::convert::identity;
+use std::{convert::identity, rc::Rc};
 
 use components::sidebar::SidebarModel;
 use gtk::prelude::*;
 use relm4::{
     Component, ComponentController, ComponentParts, ComponentSender, Controller, RelmApp,
-    RelmWidgetExt, SimpleComponent,
+    SimpleComponent,
 };
 
 mod components;
 
-#[derive(PartialEq, Eq, Debug, Clone)]
-struct Channel {
-    pub id: u64,
-    pub name: &'static str,
-}
-
 #[derive(Debug)]
 struct App {
-    sidebar: Controller<SidebarModel>,
+    active_channel: Option<i64>,
+    sidebar: Rc<Controller<SidebarModel>>,
 }
 
 #[derive(Debug)]
 pub enum AppMsg {
-    SetChannel(u64),
+    SetChannel(i64),
 }
 
 #[relm4::component]
@@ -36,12 +31,18 @@ impl SimpleComponent for App {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> relm4::prelude::ComponentParts<Self> {
-        let sidebar = SidebarModel::builder()
-            .launch(())
-            .forward(sender.input_sender(), identity);
+        let sidebar = Rc::new(
+            SidebarModel::builder()
+                .launch(())
+                .forward(sender.input_sender(), identity),
+        );
+
+        let model = App {
+            sidebar: sidebar.clone(),
+            active_channel: None,
+        };
 
         let widgets = view_output!();
-        let model = App { sidebar };
 
         ComponentParts { model, widgets }
     }
@@ -56,12 +57,28 @@ impl SimpleComponent for App {
             #[name = "top_sidebar"]
             gtk::Box {
                 set_orientation: gtk::Orientation::Horizontal,
-                append: sidebar.widget(),
+                prepend: sidebar.clone().widget(),
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Vertical,
+
+                    gtk::Label {
+                        #[watch]
+                        set_label: &match model.active_channel {
+                            None => format!("No active channel."),
+                            Some(id) => format!("Active channel: {id}"),
+                        }
+                    }
+                }
             },
         }
     }
 
-    fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {}
+    fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
+        match message {
+            AppMsg::SetChannel(id) => self.active_channel = Some(id),
+        }
+    }
 }
 
 fn main() {
