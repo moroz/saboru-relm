@@ -51,6 +51,7 @@ impl SimpleComponent for App {
         gtk::Window {
             set_width_request: 1024,
             set_height_request: 768,
+            set_title: Some("Saboru"),
 
             #[name = "top_sidebar"]
             gtk::Box {

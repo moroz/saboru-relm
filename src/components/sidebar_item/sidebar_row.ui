@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="SidebarRow" parent="GtkBox">
+    <property name="orientation">horizontal</property>
+    <property name="spacing">12</property>
+    <property name="margin-top">8</property>
+    <property name="margin-bottom">8</property>
+    <property name="margin-start">12</property>
+    <property name="margin-end">12</property>
+    <style>
+      <class name="sidebar-row"/>
+    </style>
+    <child>
+      <object class="GtkImage" id="avatar">
+        <property name="pixel-size">20</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel" id="name">
+        <property name="halign">start</property>
+      </object>
+    </child>
+  </template>
+</interface>
+
+
