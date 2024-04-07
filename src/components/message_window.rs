@@ -1,21 +1,18 @@
+use relm4::factory::FactoryVecDeque;
 use relm4::{ComponentParts, SimpleComponent};
-pub mod message_object;
 pub mod message_row;
 
 use crate::AppMsg;
 use message_row::MessageRow;
 
-use self::message_object::MessageObject;
-
 use super::sidebar_item::Channel;
 
 #[derive(Debug)]
 pub struct MessageWindowModel {
-    messages_model: gtk::NoSelection,
+    messages: FactoryVecDeque<MessageRow>,
     active_channel: Option<Channel>,
 }
 
-use gtk::gio;
 use gtk::prelude::*;
 
 #[relm4::component(pub)]
@@ -45,8 +42,8 @@ impl SimpleComponent for MessageWindowModel {
                 set_vexpand: false,
                 set_hexpand: true,
 
-                #[name = "messages"]
-                gtk::ListView {}
+                #[local_ref]
+                messages_box -> gtk::Box {}
             }
         }
     }
@@ -56,32 +53,17 @@ impl SimpleComponent for MessageWindowModel {
         root: Self::Root,
         _sender: relm4::prelude::ComponentSender<Self>,
     ) -> relm4::prelude::ComponentParts<Self> {
-        let store = gio::ListStore::new::<MessageObject>();
+        let messages = FactoryVecDeque::builder()
+            .launch(gtk::Box::default())
+            .detach();
 
         let model = MessageWindowModel {
-            messages_model: gtk::NoSelection::new(Some(store)),
+            messages,
             active_channel: None,
         };
 
+        let messages_box = model.messages.widget();
         let widgets = view_output!();
-
-        let factory = gtk::SignalListItemFactory::new();
-        factory.connect_setup(move |_, item| {
-            let component = MessageRow::default();
-            item.downcast_ref::<gtk::ListItem>()
-                .unwrap()
-                .set_child(Some(&component));
-        });
-
-        factory.connect_bind(move |_, item| {
-            let item = item.downcast_ref::<gtk::ListItem>().unwrap();
-            let data_row = item.item().and_downcast::<MessageObject>().unwrap();
-            let child = item.child().and_downcast::<MessageRow>().unwrap();
-            child.set_content(data_row.property::<String>("body"));
-        });
-
-        widgets.messages.set_factory(Some(&factory));
-        widgets.messages.set_model(Some(&model.messages_model));
 
         ComponentParts { model, widgets }
     }

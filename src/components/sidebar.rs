@@ -93,6 +93,9 @@ impl SimpleComponent for SidebarModel {
     fn update(&mut self, message: Self::Input, _sender: relm4::prelude::ComponentSender<Self>) {
         match message {
             AppMsg::ChannelsFetched(channels) => self.update_list(channels.clone()),
+            AppMsg::SetChannel(id) => {
+                self.select_by_id(Some(id));
+            }
             _ => (),
         }
     }
@@ -111,6 +114,28 @@ impl SidebarModel {
 
         for channel in channels.iter() {
             store.append(&DataRow::new(channel.id, channel.label.to_string()));
+        }
+    }
+
+    fn select_by_id(&self, id: Option<i64>) {
+        match id {
+            None => {
+                self.channels_model.unselect_all();
+            }
+            Some(id) => {
+                let store = self
+                    .channels_model
+                    .model()
+                    .unwrap()
+                    .downcast::<gio::ListStore>()
+                    .unwrap();
+                let position = store
+                    .iter()
+                    .position(|item: Result<DataRow, _>| item.unwrap().property::<i64>("id") == id);
+                if position.is_some() {
+                    self.channels_model.set_selected(position.unwrap() as u32)
+                }
+            }
         }
     }
 }

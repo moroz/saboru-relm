@@ -1,6 +1,7 @@
 use std::convert::identity;
 use std::rc::Rc;
 
+use api::API;
 use components::message_window::MessageWindowModel;
 use components::sidebar::SidebarModel;
 use components::sidebar_item::Channel;
@@ -9,6 +10,7 @@ use gtk::prelude::*;
 use relm4::component::{AsyncComponentParts, SimpleAsyncComponent};
 use relm4::{AsyncComponentSender, Component, ComponentController, Controller, RelmApp};
 
+mod api;
 mod components;
 
 #[derive(Debug)]
@@ -87,11 +89,17 @@ impl SimpleAsyncComponent for App {
             }
 
             AppMsg::FetchChannels => {
-                let channels = App::fetch_channels().await.unwrap();
+                let channels = API::fetch_channels().await.unwrap();
+                let first_channel = channels.first().unwrap().id;
 
                 sender
                     .input_sender()
                     .send(AppMsg::ChannelsFetched(Rc::new(channels)))
+                    .unwrap();
+
+                sender
+                    .input_sender()
+                    .send(AppMsg::SetChannel(first_channel))
                     .unwrap();
             }
             AppMsg::ChannelsFetched(channels) => {
@@ -102,18 +110,6 @@ impl SimpleAsyncComponent for App {
                     .unwrap();
             }
         }
-    }
-}
-
-impl App {
-    async fn fetch_channels() -> Result<Vec<Channel>, serde_json::Error> {
-        let res = reqwest::get("http://localhost:3000")
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap();
-        serde_json::from_str(&res)
     }
 }
 

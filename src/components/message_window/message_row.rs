@@ -1,48 +1,43 @@
-mod imp {
-    use gtk::{glib, subclass::prelude::*};
+use gtk::prelude::*;
+use relm4::factory::FactoryComponent;
 
-    #[derive(Default, gtk::CompositeTemplate)]
-    #[template(file = "message_row.ui")]
-    pub struct MessageRow {
-        #[template_child]
-        pub body: TemplateChild<gtk::Label>,
-    }
+use crate::components::types::ChatMessage;
 
-    #[glib::object_subclass]
-    impl ObjectSubclass for MessageRow {
-        const NAME: &'static str = "MessageRow";
-        type Type = super::MessageRow;
-        type ParentType = gtk::Box;
+#[derive(Debug)]
+pub struct MessageRow {
+    pub id: i64,
+    pub body: String,
+    pub sender: String,
+}
 
-        fn class_init(klass: &mut Self::Class) {
-            klass.bind_template();
+#[relm4::factory(pub)]
+impl FactoryComponent for MessageRow {
+    type Init = ChatMessage;
+    type Input = ();
+    type Output = ();
+    type CommandOutput = ();
+    type ParentWidget = gtk::Box;
+
+    view! {
+        gtk::Box {
+            set_orientation: gtk::Orientation::Vertical,
+
+            #[name(body)]
+            gtk::Label {
+                set_label: &self.body,
+            }
         }
+    }
 
-        fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
-            obj.init_template();
+    fn init_model(
+        init: Self::Init,
+        _index: &Self::Index,
+        _sender: relm4::prelude::FactorySender<Self>,
+    ) -> Self {
+        Self {
+            id: init.id,
+            body: init.body,
+            sender: init.sender,
         }
-    }
-
-    impl ObjectImpl for MessageRow {}
-    impl WidgetImpl for MessageRow {}
-    impl BoxImpl for MessageRow {}
-}
-
-use gtk::{glib, subclass::prelude::*};
-
-glib::wrapper! {
-    pub struct MessageRow(ObjectSubclass<imp::MessageRow>)
-    @extends gtk::Widget, gtk::Box;
-}
-
-impl Default for MessageRow {
-    fn default() -> Self {
-        glib::Object::new()
-    }
-}
-
-impl MessageRow {
-    pub fn set_content(&self, body: String) {
-        self.imp().body.set_text(&body);
     }
 }
