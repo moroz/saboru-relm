@@ -1,7 +1,10 @@
-use std::{convert::identity, rc::Rc};
+use std::convert::identity;
 
+use components::message_window::MessageWindowModel;
 use components::sidebar::SidebarModel;
+use gtk::gdk::Display;
 use gtk::prelude::*;
+use gtk::{gio, glib, ApplicationWindow, CssProvider};
 use relm4::{
     Component, ComponentController, ComponentParts, ComponentSender, Controller, RelmApp,
     SimpleComponent,
@@ -12,7 +15,8 @@ mod components;
 #[derive(Debug)]
 struct App {
     active_channel: Option<i64>,
-    sidebar: Rc<Controller<SidebarModel>>,
+    sidebar: Controller<SidebarModel>,
+    message_window: Controller<MessageWindowModel>,
 }
 
 #[derive(Debug)]
@@ -31,18 +35,20 @@ impl SimpleComponent for App {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> relm4::prelude::ComponentParts<Self> {
-        let sidebar = Rc::new(
-            SidebarModel::builder()
-                .launch(())
-                .forward(sender.input_sender(), identity),
-        );
-
-        let model = App {
-            sidebar: sidebar.clone(),
-            active_channel: None,
-        };
+        let sidebar = SidebarModel::builder()
+            .launch(())
+            .forward(sender.input_sender(), identity);
+        let message_window = MessageWindowModel::builder()
+            .launch(())
+            .forward(sender.input_sender(), identity);
 
         let widgets = view_output!();
+
+        let model = App {
+            sidebar,
+            message_window,
+            active_channel: None,
+        };
 
         ComponentParts { model, widgets }
     }
@@ -54,21 +60,15 @@ impl SimpleComponent for App {
             set_height_request: 768,
             set_title: Some("Saboru"),
 
-            #[name = "top_sidebar"]
+            #[name = "layout"]
             gtk::Box {
                 set_orientation: gtk::Orientation::Horizontal,
-                prepend: sidebar.clone().widget(),
+                prepend: sidebar.widget(),
 
+                #[name = "content"]
                 gtk::Box {
                     set_orientation: gtk::Orientation::Vertical,
-
-                    gtk::Label {
-                        #[watch]
-                        set_label: &match model.active_channel {
-                            None => format!("No active channel."),
-                            Some(id) => format!("Active channel: {id}"),
-                        }
-                    }
+                    prepend: message_window.widget(),
                 }
             },
         }
@@ -76,12 +76,17 @@ impl SimpleComponent for App {
 
     fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
         match message {
-            AppMsg::SetChannel(id) => self.active_channel = Some(id),
+            AppMsg::SetChannel(id) => {
+                self.active_channel = Some(id);
+            }
         }
     }
 }
 
 fn main() {
     let app = RelmApp::new("dev.moroz.saboru");
+    let css =
+        &glib::GString::from_string_checked(include_str!("css/style.css").to_string()).unwrap();
+    app.set_global_css(css);
     app.run::<App>(());
 }

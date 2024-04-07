@@ -12,13 +12,10 @@ pub struct SidebarModel {
     channels_model: gtk::SingleSelection,
 }
 
-#[derive(Debug)]
-pub enum SidebarMsg {}
-
 #[relm4::component(pub)]
 impl SimpleComponent for SidebarModel {
     type Init = ();
-    type Input = SidebarMsg;
+    type Input = AppMsg;
     type Output = AppMsg;
 
     view! {
@@ -27,8 +24,22 @@ impl SimpleComponent for SidebarModel {
             set_vexpand: false,
             set_width_request: 300,
 
-            #[name = "channels"]
-            gtk::ListView {}
+            gtk::Box {
+                set_orientation: gtk::Orientation::Vertical,
+                set_css_classes: &["sidebar"],
+
+                gtk::Label {
+                    set_label: "Contacts",
+                    set_margin_top: 10,
+                    set_margin_start: 10,
+                    set_margin_end: 10,
+                    set_margin_bottom: 10,
+                    set_halign: gtk::Align::Start,
+                },
+
+                #[name = "channels"]
+                gtk::ListView {}
+            }
         }
     }
 
@@ -42,7 +53,7 @@ impl SimpleComponent for SidebarModel {
         let initial_channels = &[("Alice", 1), ("Bob", 2)];
 
         for (name, id) in initial_channels {
-            store.append(&DataRow::new(name.to_string(), *id));
+            store.append(&DataRow::new(*id, name.to_string()));
         }
 
         let model = SidebarModel {
@@ -64,7 +75,7 @@ impl SimpleComponent for SidebarModel {
             let item = item.downcast_ref::<gtk::ListItem>().unwrap();
             let data_row = item.item().and_downcast::<DataRow>().unwrap();
             let child = item.child().and_downcast::<SidebarRow>().unwrap();
-            child.set_content(data_row.property::<String>("label"))
+            child.set_content(data_row.property::<String>("label"));
         });
 
         model.channels_model.connect_selection_changed(

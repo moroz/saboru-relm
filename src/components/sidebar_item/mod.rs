@@ -1,5 +1,6 @@
 mod data_row;
 pub use data_row::DataRow;
+pub use data_row::SidebarItemData;
 
 mod imp {
     use gtk::{glib, subclass::prelude::*};
@@ -48,7 +49,6 @@ impl Default for SidebarRow {
 
 impl SidebarRow {
     pub fn set_content(&self, label: String) {
-        let imp = self.imp();
-        imp.name.set_text(&label);
+        self.imp().name.set_text(&label);
     }
 }

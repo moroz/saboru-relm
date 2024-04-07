@@ -17,7 +17,7 @@ mod imp {
 
     #[glib::object_subclass]
     impl ObjectSubclass for DataRow {
-        const NAME: &'static str = "SidebarItem";
+        const NAME: &'static str = "DataRow";
         type Type = super::DataRow;
     }
 
@@ -33,10 +33,10 @@ glib::wrapper! {
 }
 
 impl DataRow {
-    pub fn new(label: String, id: impl Into<i64>) -> Self {
+    pub fn new(id: i64, label: impl Into<String>) -> Self {
         Object::builder()
-            .property("label", label)
-            .property("id", id.into())
+            .property("label", label.into())
+            .property("id", id)
             .build()
     }
 }

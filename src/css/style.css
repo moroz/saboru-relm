@@ -1,0 +1,29 @@
+.header {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.sidebar {
+  background: #0f3ea5;
+  color: white;
+}
+
+.sidebar listview {
+  background: transparent;
+}
+
+.sidebar listview row:selected {
+  background: transparent;
+}
+
+.message-window {
+  background: transparent;
+  background: white;
+  color: #000;
+}
+
+.message-window listview {
+  background: transparent;
+}
+
+/*# sourceMappingURL=style.css.map */
