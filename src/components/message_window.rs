@@ -7,12 +7,12 @@ use message_row::MessageRow;
 
 use self::message_object::MessageObject;
 
-use super::sidebar_item::SidebarItemData;
+use super::sidebar_item::Channel;
 
 #[derive(Debug)]
 pub struct MessageWindowModel {
     messages_model: gtk::NoSelection,
-    active_channel: Option<SidebarItemData>,
+    active_channel: Option<Channel>,
 }
 
 use gtk::gio;
@@ -85,5 +85,9 @@ impl SimpleComponent for MessageWindowModel {
         widgets.messages.set_model(Some(&model.messages_model));
 
         ComponentParts { model, widgets }
+    }
+
+    fn update(&mut self, message: Self::Input, sender: relm4::prelude::ComponentSender<Self>) {
+        println!("{:?}", message);
     }
 }

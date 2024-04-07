@@ -5,14 +5,14 @@ mod imp {
     use gtk::subclass::prelude::*;
     use std::cell::RefCell;
 
-    use super::SidebarItemData;
+    use super::Channel;
 
     #[derive(Properties, Default)]
     #[properties(wrapper_type = super::DataRow)]
     pub struct DataRow {
         #[property(name = "id", get, set, type = i64, member = id)]
         #[property(name = "label", get, set, type = String, member = label)]
-        pub data: RefCell<SidebarItemData>,
+        pub data: RefCell<Channel>,
     }
 
     #[glib::object_subclass]
@@ -42,7 +42,7 @@ impl DataRow {
 }
 
 #[derive(Default, Clone, Debug)]
-pub struct SidebarItemData {
+pub struct Channel {
     pub label: String,
     pub id: i64,
 }

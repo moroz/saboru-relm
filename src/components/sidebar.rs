@@ -1,3 +1,4 @@
+use super::sidebar_item::Channel;
 use super::sidebar_item::DataRow;
 use super::sidebar_item::SidebarRow;
 use crate::AppMsg;
@@ -6,6 +7,7 @@ use gtk::glib::clone;
 use gtk::prelude::*;
 use relm4::ComponentParts;
 use relm4::SimpleComponent;
+use std::rc::Rc;
 
 #[derive(Debug)]
 pub struct SidebarModel {
@@ -50,12 +52,6 @@ impl SimpleComponent for SidebarModel {
     ) -> relm4::prelude::ComponentParts<Self> {
         let store = gio::ListStore::new::<DataRow>();
 
-        let initial_channels = &[("Alice", 1), ("Bob", 2)];
-
-        for (name, id) in initial_channels {
-            store.append(&DataRow::new(*id, name.to_string()));
-        }
-
         let model = SidebarModel {
             channels_model: gtk::SingleSelection::builder()
                 .model(&store)
@@ -92,5 +88,29 @@ impl SimpleComponent for SidebarModel {
         widgets.channels.set_model(Some(&model.channels_model));
 
         ComponentParts { model, widgets }
+    }
+
+    fn update(&mut self, message: Self::Input, sender: relm4::prelude::ComponentSender<Self>) {
+        match message {
+            AppMsg::ChannelsFetched(channels) => self.update_list(channels.clone()),
+            _ => (),
+        }
+    }
+}
+
+impl SidebarModel {
+    fn update_list(&mut self, channels: Rc<Vec<Channel>>) {
+        let store = self
+            .channels_model
+            .model()
+            .unwrap()
+            .downcast::<gio::ListStore>()
+            .unwrap();
+
+        store.remove_all();
+
+        for channel in channels.iter() {
+            store.append(&DataRow::new(channel.id, channel.label.to_string()));
+        }
     }
 }
