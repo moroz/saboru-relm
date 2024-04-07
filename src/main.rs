@@ -92,7 +92,7 @@ impl SimpleAsyncComponent for App {
             }
 
             AppMsg::FetchChannels => {
-                let channels = App::fetch_channels().await;
+                let channels = App::fetch_channels().await.unwrap();
 
                 sender
                     .input_sender()
@@ -111,16 +111,14 @@ impl SimpleAsyncComponent for App {
 }
 
 impl App {
-    async fn fetch_channels() -> Vec<Channel> {
-        tokio::time::sleep(Duration::from_millis(100)).await;
-        let channel_names = [(1, "Alice"), (2, "Bob")];
-        channel_names
-            .iter()
-            .map(|(id, label)| Channel {
-                id: *id,
-                label: label.to_string(),
-            })
-            .collect()
+    async fn fetch_channels() -> Result<Vec<Channel>, serde_json::Error> {
+        let res = reqwest::get("http://localhost:3000")
+            .await
+            .unwrap()
+            .text()
+            .await
+            .unwrap();
+        serde_json::from_str(&res)
     }
 }
 

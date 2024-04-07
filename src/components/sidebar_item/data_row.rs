@@ -5,7 +5,7 @@ mod imp {
     use gtk::subclass::prelude::*;
     use std::cell::RefCell;
 
-    use super::Channel;
+    use crate::Channel;
 
     #[derive(Properties, Default)]
     #[properties(wrapper_type = super::DataRow)]
@@ -39,10 +39,4 @@ impl DataRow {
             .property("id", id)
             .build()
     }
-}
-
-#[derive(Default, Clone, Debug)]
-pub struct Channel {
-    pub label: String,
-    pub id: i64,
 }

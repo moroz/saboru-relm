@@ -1,6 +1,6 @@
 mod data_row;
 pub use data_row::DataRow;
-pub use data_row::Channel;
+pub use super::types::Channel;
 
 mod imp {
     use gtk::{glib, subclass::prelude::*};
