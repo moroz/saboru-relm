@@ -1,18 +1,13 @@
 use std::convert::identity;
 use std::rc::Rc;
-use std::time::Duration;
 
 use components::message_window::MessageWindowModel;
 use components::sidebar::SidebarModel;
 use components::sidebar_item::Channel;
-use gtk::gdk::Display;
+use gtk::glib;
 use gtk::prelude::*;
-use gtk::{gio, glib, ApplicationWindow, CssProvider};
 use relm4::component::{AsyncComponentParts, SimpleAsyncComponent};
-use relm4::{
-    AsyncComponentSender, Component, ComponentController, ComponentParts, ComponentSender,
-    Controller, RelmApp, SimpleComponent,
-};
+use relm4::{AsyncComponentSender, Component, ComponentController, Controller, RelmApp};
 
 mod components;
 
@@ -38,7 +33,7 @@ impl SimpleAsyncComponent for App {
     type Output = ();
 
     async fn init(
-        init: Self::Init,
+        _init: Self::Init,
         root: Self::Root,
         sender: AsyncComponentSender<Self>,
     ) -> relm4::prelude::AsyncComponentParts<Self> {

@@ -46,7 +46,7 @@ impl SimpleComponent for SidebarModel {
     }
 
     fn init(
-        init: Self::Init,
+        _init: Self::Init,
         root: Self::Root,
         sender: relm4::prelude::ComponentSender<Self>,
     ) -> relm4::prelude::ComponentParts<Self> {
@@ -90,7 +90,7 @@ impl SimpleComponent for SidebarModel {
         ComponentParts { model, widgets }
     }
 
-    fn update(&mut self, message: Self::Input, sender: relm4::prelude::ComponentSender<Self>) {
+    fn update(&mut self, message: Self::Input, _sender: relm4::prelude::ComponentSender<Self>) {
         match message {
             AppMsg::ChannelsFetched(channels) => self.update_list(channels.clone()),
             _ => (),

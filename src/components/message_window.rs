@@ -1,4 +1,4 @@
-use relm4::{factory::widgets, ComponentParts, SimpleComponent};
+use relm4::{ComponentParts, SimpleComponent};
 pub mod message_object;
 pub mod message_row;
 
@@ -17,7 +17,6 @@ pub struct MessageWindowModel {
 
 use gtk::gio;
 use gtk::prelude::*;
-use gtk::subclass::prelude::*;
 
 #[relm4::component(pub)]
 impl SimpleComponent for MessageWindowModel {
@@ -53,9 +52,9 @@ impl SimpleComponent for MessageWindowModel {
     }
 
     fn init(
-        init: Self::Init,
+        _init: Self::Init,
         root: Self::Root,
-        sender: relm4::prelude::ComponentSender<Self>,
+        _sender: relm4::prelude::ComponentSender<Self>,
     ) -> relm4::prelude::ComponentParts<Self> {
         let store = gio::ListStore::new::<MessageObject>();
 
@@ -87,7 +86,7 @@ impl SimpleComponent for MessageWindowModel {
         ComponentParts { model, widgets }
     }
 
-    fn update(&mut self, message: Self::Input, sender: relm4::prelude::ComponentSender<Self>) {
+    fn update(&mut self, message: Self::Input, _sender: relm4::prelude::ComponentSender<Self>) {
         println!("{:?}", message);
     }
 }
