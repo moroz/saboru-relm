@@ -92,15 +92,7 @@ impl SimpleAsyncComponent for App {
             }
 
             AppMsg::FetchChannels => {
-                tokio::time::sleep(Duration::from_millis(2000)).await;
-                let channel_names = [(1, "Alice"), (2, "Bob")];
-                let channels = channel_names
-                    .iter()
-                    .map(|(id, label)| Channel {
-                        id: *id,
-                        label: label.to_string(),
-                    })
-                    .collect();
+                let channels = App::fetch_channels().await;
 
                 sender
                     .input_sender()
@@ -115,6 +107,20 @@ impl SimpleAsyncComponent for App {
                     .unwrap();
             }
         }
+    }
+}
+
+impl App {
+    async fn fetch_channels() -> Vec<Channel> {
+        tokio::time::sleep(Duration::from_millis(100)).await;
+        let channel_names = [(1, "Alice"), (2, "Bob")];
+        channel_names
+            .iter()
+            .map(|(id, label)| Channel {
+                id: *id,
+                label: label.to_string(),
+            })
+            .collect()
     }
 }
 
