@@ -5,6 +5,7 @@ use api::API;
 use components::message_window::MessageWindowModel;
 use components::sidebar::SidebarModel;
 use components::sidebar_item::Channel;
+use components::types::ChatMessage;
 use gtk::glib;
 use gtk::prelude::*;
 use relm4::component::{AsyncComponentParts, SimpleAsyncComponent};
@@ -25,7 +26,9 @@ struct App {
 pub enum AppMsg {
     SetChannel(i64),
     ChannelsFetched(Rc<Vec<Channel>>),
+    MessagesFetched(Rc<Vec<ChatMessage>>),
     FetchChannels,
+    FetchMessages(i64),
 }
 
 #[relm4::component(async)]
@@ -76,7 +79,13 @@ impl SimpleAsyncComponent for App {
                 gtk::Box {
                     set_orientation: gtk::Orientation::Vertical,
                     prepend: message_window.widget(),
-                }
+
+                    #[name = "input"]
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+                        set_height_request: 300,
+                    },
+                },
             },
         }
     }
@@ -86,29 +95,32 @@ impl SimpleAsyncComponent for App {
             AppMsg::SetChannel(id) => {
                 self.active_channel = Some(id);
                 self.message_window.sender().send(message).unwrap();
+                sender.input(AppMsg::FetchMessages(id));
             }
 
             AppMsg::FetchChannels => {
                 let channels = API::fetch_channels().await.unwrap();
                 let first_channel = channels.first().unwrap().id;
+                let channels = Rc::new(channels);
 
-                sender
-                    .input_sender()
-                    .send(AppMsg::ChannelsFetched(Rc::new(channels)))
-                    .unwrap();
-
-                sender
-                    .input_sender()
-                    .send(AppMsg::SetChannel(first_channel))
-                    .unwrap();
-            }
-            AppMsg::ChannelsFetched(channels) => {
-                self.channels = channels.clone();
                 self.sidebar
                     .sender()
-                    .send(AppMsg::ChannelsFetched(channels))
+                    .send(AppMsg::ChannelsFetched(channels.clone()))
+                    .unwrap();
+
+                self.channels = channels.clone();
+                sender.input(AppMsg::SetChannel(first_channel));
+            }
+
+            AppMsg::FetchMessages(channel_id) => {
+                let messages = API::fetch_messages(channel_id).await.unwrap();
+                self.message_window
+                    .sender()
+                    .send(AppMsg::MessagesFetched(messages.into()))
                     .unwrap();
             }
+
+            _ => (),
         }
     }
 }

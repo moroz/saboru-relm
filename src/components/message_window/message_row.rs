@@ -1,5 +1,6 @@
 use gtk::prelude::*;
 use relm4::factory::FactoryComponent;
+use relm4::RelmWidgetExt;
 
 use crate::components::types::ChatMessage;
 
@@ -21,9 +22,20 @@ impl FactoryComponent for MessageRow {
     view! {
         gtk::Box {
             set_orientation: gtk::Orientation::Vertical,
+            set_halign: gtk::Align::Start,
+            set_margin_all: 10,
+            set_css_classes: &["message-row"],
+
+            #[name(sender)]
+            gtk::Label {
+                set_halign: gtk::Align::Start,
+                set_label: &self.sender,
+                set_css_classes: &["sender"],
+            },
 
             #[name(body)]
             gtk::Label {
+                set_halign: gtk::Align::Start,
                 set_label: &self.body,
             }
         }

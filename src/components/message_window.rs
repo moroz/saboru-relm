@@ -26,7 +26,6 @@ impl SimpleComponent for MessageWindowModel {
             set_orientation: gtk::Orientation::Vertical,
             set_spacing: 10,
             set_css_classes: &["message-window"],
-            set_height_request: 768 - 300,
 
             gtk::Label {
                 set_label: "Messages",
@@ -39,11 +38,14 @@ impl SimpleComponent for MessageWindowModel {
 
             gtk::ScrolledWindow {
                 set_hscrollbar_policy: gtk::PolicyType::Never,
-                set_vexpand: false,
+                set_vexpand: true,
                 set_hexpand: true,
 
                 #[local_ref]
-                messages_box -> gtk::Box {}
+                messages_box -> gtk::Box {
+                    set_orientation: gtk::Orientation::Vertical,
+                    set_valign: gtk::Align::End,
+                }
             }
         }
     }
@@ -69,6 +71,14 @@ impl SimpleComponent for MessageWindowModel {
     }
 
     fn update(&mut self, message: Self::Input, _sender: relm4::prelude::ComponentSender<Self>) {
-        println!("{:?}", message);
+        match message {
+            AppMsg::MessagesFetched(messages) => {
+                self.messages.guard().clear();
+                for message in messages.iter() {
+                    self.messages.guard().push_back(message.clone());
+                }
+            }
+            _ => (),
+        }
     }
 }
